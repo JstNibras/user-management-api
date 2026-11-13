@@ -1,8 +1,20 @@
 import "dotenv/config";
 import app from "./app";
+import { connectMongoDB } from "./infrastructure/database/mongodb/connection";
 
 const PORT = Number(process.env.PORT) || 4000;
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const startServer = async (): Promise<void> => {
+  try {
+    await connectMongoDB();
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+};
+
+startServer();
