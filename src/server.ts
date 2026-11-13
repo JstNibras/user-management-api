@@ -1,11 +1,13 @@
 import "dotenv/config";
 import app from "./app";
 import { connectMongoDB } from "./infrastructure/database/mongodb/connection";
+import { testMySQLConnection } from "./infrastructure/database/mysql/testConnection";
 
 const PORT = Number(process.env.PORT) || 4000;
 
 const startServer = async (): Promise<void> => {
   try {
+    await testMySQLConnection();
     await connectMongoDB();
 
     app.listen(PORT, "0.0.0.0", () => {
