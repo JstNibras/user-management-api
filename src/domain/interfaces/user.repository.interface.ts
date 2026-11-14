@@ -14,4 +14,6 @@ export interface IUserRepository {
   update(id: number, user: Partial<User>): Promise<User>;
 
   delete(id: number): Promise<void>;
+
+  findUnsyncedUsers(): Promise<User[]>;
 }

@@ -9,6 +9,7 @@ export interface User {
   email: string;
   password: string;
   role: UserRole;
+  mongoSynced: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
