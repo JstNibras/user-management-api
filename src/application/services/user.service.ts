@@ -96,4 +96,41 @@ export class UserService {
             }
         }
     }
+
+    async login(data: {
+        email: string;
+        password: string;
+    }): Promise<{
+        user: Omit<User, "password">;
+        token: string;
+    }> {
+        const existingUser = await this.userRepository.findByEmail(
+            data.email
+        );
+
+        if (!existingUser) {
+            throw new AppError(401, "Invalid email or password");
+        }
+
+        const isPasswordValid = await this.passwordHasher.compare(
+            data.password,
+            existingUser.password
+        );
+
+        if (!isPasswordValid) {
+            throw new AppError(401, "Invalid email or password");
+        }
+
+        const token = this.tokenService.generateToken({
+            userId: existingUser.id,
+            role: existingUser.role,
+        });
+
+        const { password, ...safeUser } = existingUser;
+
+        return {
+            user: safeUser,
+            token,
+        };
+    }
 }
