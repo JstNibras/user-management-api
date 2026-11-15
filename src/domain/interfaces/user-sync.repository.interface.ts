@@ -5,6 +5,7 @@ export interface UserSyncData {
   name: string;
   email: string;
   role: UserRole;
+  isDeleted: boolean;
 }
 
 export interface IUserSyncRepository {

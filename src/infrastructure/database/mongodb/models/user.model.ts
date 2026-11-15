@@ -5,6 +5,7 @@ export interface IUserDocument extends Document {
   name: string;
   email: string;
   role: "ADMIN" | "USER";
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,6 +29,11 @@ const userSchema = new Schema<IUserDocument>(
     role: {
       type: String,
       enum: ["ADMIN", "USER"],
+      required: true,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
       required: true,
     },
   },

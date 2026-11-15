@@ -22,6 +22,7 @@ export class MySQLUserRepository implements IUserRepository {
                     password: user.password,
                     role: user.role,
                     mongoSynced: false,
+                    isDeleted: user.isDeleted,
                 },
             });
         return this.toDomain(createdUser);
@@ -42,7 +43,11 @@ export class MySQLUserRepository implements IUserRepository {
             where: { id },
         });
 
-        return user ? this.toDomain(user) : null;
+        if (!user || user.isDeleted) {
+            return null;
+        }
+
+        return this.toDomain(user);
     }
 
     async findByEmail(email: string): Promise<User | null> {
@@ -50,11 +55,16 @@ export class MySQLUserRepository implements IUserRepository {
             where: { email },
         });
 
-        return user ? this.toDomain(user) : null;
+        if (!user || user.isDeleted) {
+            return null;
+        }
+
+        return this.toDomain(user);
     }
 
     async findAll(): Promise<User[]> {
         const users = await prisma.user.findMany({
+            where: { isDeleted: false },
             orderBy: { createdAt: "desc" },
         });
 
@@ -95,8 +105,12 @@ export class MySQLUserRepository implements IUserRepository {
     }
 
     async delete(id: number): Promise<void> {
-        await prisma.user.delete({
+        await prisma.user.update({
             where: { id },
+            data: {
+                isDeleted: true,
+                mongoSynced: false,
+            },
         });
     }
 
@@ -107,6 +121,7 @@ export class MySQLUserRepository implements IUserRepository {
         password: string;
         role: string;
         mongoSynced: boolean;
+        isDeleted: boolean;
         createdAt: Date;
         updatedAt: Date;
     }): User {
@@ -117,6 +132,7 @@ export class MySQLUserRepository implements IUserRepository {
             password: user.password,
             role: user.role as UserRole,
             mongoSynced: user.mongoSynced,
+            isDeleted: user.isDeleted,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
         };

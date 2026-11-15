@@ -10,6 +10,7 @@ export interface User {
   password: string;
   role: UserRole;
   mongoSynced: boolean;
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

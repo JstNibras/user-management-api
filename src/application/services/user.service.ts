@@ -36,6 +36,7 @@ export class UserService {
             password: hashedPassword,
             role: UserRole.USER,
             mongoSynced: false,
+            isDeleted: false,
         });
 
         try {
@@ -44,6 +45,7 @@ export class UserService {
                 name: createdUser.name,
                 email: createdUser.email,
                 role: createdUser.role,
+                isDeleted: createdUser.isDeleted,
             });
         } catch (error) {
             console.error("MongoDB synchronization failed:", error);
@@ -81,6 +83,7 @@ export class UserService {
                     name: user.name,
                     email: user.email,
                     role: user.role,
+                    isDeleted: user.isDeleted,
                 });
 
                 await this.userRepository.update(user.id, {
