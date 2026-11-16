@@ -21,3 +21,21 @@ export const validate = (schema: ZodSchema) => {
     next();
   };
 };
+
+export const validateQuery = (schema: ZodSchema) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const result = schema.safeParse(req.query);
+
+    if (!result.success) {
+      res.status(400).json({
+        success: false,
+        message: "Query validation failed",
+        errors: result.error.flatten().fieldErrors,
+      });
+      return;
+    }
+
+    res.locals.validatedQuery = result.data;
+    next();
+  };
+};

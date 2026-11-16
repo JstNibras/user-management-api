@@ -136,4 +136,56 @@ export class UserService {
             token,
         };
     }
+
+    async getAllUsers(options: {
+        search?: string;
+        page?: number;
+        limit?: number;
+        sortBy?: string;
+        sortOrder?: string;
+    }) {
+        const page = options.page ?? 1;
+        const limit = options.limit ?? 10;
+        const sortBy = options.sortBy ?? "createdAt";
+        const sortOrder = options.sortOrder ?? "desc";
+
+        const allowedSortFields = ["name", "email", "createdAt"];
+        const allowedSortOrders = ["asc", "desc"];
+
+        if (!Number.isInteger(page) || page < 1) {
+            throw new AppError(400, "Page must be a positive integer");
+        }
+
+        if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+            throw new AppError(400, "Limit must be between 1 and 100");
+        }
+
+        if (!allowedSortFields.includes(sortBy)) {
+            throw new AppError(400, "Invalid sort field");
+        }
+
+        if (!allowedSortOrders.includes(sortOrder)) {
+            throw new AppError(400, "Invalid sort order");
+        }
+
+        const result = await this.userRepository.findAll({
+            search: options.search,
+            page,
+            limit,
+            sortBy: sortBy as "name" | "email" | "createdAt",
+            sortOrder: sortOrder as "asc" | "desc",
+        });
+
+        const safeUsers = result.users.map(({ password, ...user }) => user);
+
+        return {
+            users: safeUsers,
+            pagination: {
+            totalUsers: result.total,
+            currentPage: page,
+            totalPages: Math.ceil(result.total / limit),
+            limit,
+            },
+        };
+    }
 }
