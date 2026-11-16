@@ -8,7 +8,6 @@ import {
   User,
   UserRole,
 } from "../../domain/entities/user.entity";
-import { error } from "node:console";
 
 export class MySQLUserRepository implements IUserRepository {
     async create(
@@ -62,13 +61,41 @@ export class MySQLUserRepository implements IUserRepository {
         return this.toDomain(user);
     }
 
-    async findAll(): Promise<User[]> {
-        const users = await prisma.user.findMany({
-            where: { isDeleted: false },
-            orderBy: { createdAt: "desc" },
-        });
+    async findAll(options: {
+        search?: string;
+        page: number;
+        limit: number;
+        sortBy: "name" | "email" | "createdAt";
+        sortOrder: "asc" | "desc";
+    }): Promise<{ users: User[]; total: number }> {
+        const { search, page, limit, sortBy, sortOrder } = options;
 
-        return users.map((user) => this.toDomain(user));
+        const where: Prisma.UserWhereInput = {
+            isDeleted: false,
+            ...(search && {
+                OR: [
+                    { name: { contains: search } },
+                    { email: { contains: search } },
+                ],
+            }),
+        };
+
+        const [users, total] = await prisma.$transaction([
+            prisma.user.findMany({
+                where,
+                skip: (page - 1) * limit,
+                take: limit,
+                orderBy: {
+                    [sortBy]: sortOrder,
+                },
+            }),
+            prisma.user.count({ where }),
+        ]);
+
+        return {
+            users: users.map((user) => this.toDomain(user)),
+            total,
+        };
     }
 
     async findUnsyncedUsers(): Promise<User[]> {
@@ -97,6 +124,9 @@ export class MySQLUserRepository implements IUserRepository {
                 ...(user.role !== undefined && { role: user.role }),
                 ...(user.mongoSynced !== undefined && {
                     mongoSynced: user.mongoSynced,
+                }),
+                ...(user.isDeleted !== undefined && {
+                    isDeleted: user.isDeleted,
                 }),
             },
         });

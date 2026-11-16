@@ -14,6 +14,7 @@ export class MongoDBUserSyncRepository implements IUserSyncRepository {
           name: user.name,
           email: user.email,
           role: user.role,
+          isDeleted: user.isDeleted,
         },
       },
       {

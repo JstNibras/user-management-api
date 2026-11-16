@@ -9,7 +9,16 @@ export interface IUserRepository {
 
   findByEmail(email: string): Promise<User | null>;
 
-  findAll(): Promise<User[]>;
+  findAll(options: {
+    search?: string;
+    page: number;
+    limit: number;
+    sortBy: "name" | "email" | "createdAt";
+    sortOrder: "asc" | "desc";
+  }): Promise<{
+    users: User[];
+    total: number;
+  }>;
 
   update(id: number, user: Partial<User>): Promise<User>;
 
