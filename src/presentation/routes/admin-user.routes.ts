@@ -16,4 +16,11 @@ router.get(
   (req, res, next) => adminUserController.getAllUsers(req, res, next)
 );
 
+router.get(
+  "/:id",
+  authenticate,
+  authorize(UserRole.ADMIN),
+  (req, res, next) => adminUserController.getUserById(req, res, next)
+);
+
 export default router;

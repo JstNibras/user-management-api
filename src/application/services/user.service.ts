@@ -188,4 +188,20 @@ export class UserService {
             },
         };
     }
+
+    async getUserById(id: number): Promise<Omit<User, "password">> {
+        if (!Number.isInteger(id) || id <= 0) {
+            throw new AppError(400, "Invalid user ID");
+        }
+
+        const user = await this.userRepository.findById(id);
+
+        if (!user) {
+            throw new AppError(404, "User not found");
+        }
+
+        const { password, ...safeUser } = user;
+
+        return safeUser;
+    }
 }

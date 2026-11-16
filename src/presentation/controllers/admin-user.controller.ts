@@ -8,18 +8,38 @@ export class AdminUserController {
         next: NextFunction
     ): Promise<void> {
         try {
-        const result = await userService.getAllUsers(
-            res.locals.validatedQuery
-        );
+            const result = await userService.getAllUsers(
+                res.locals.validatedQuery
+            );
 
-        res.status(200).json({
-            success: true,
-            message: "Users retrieved successfully",
-            data: result.users,
-            pagination: result.pagination,
-        });
+            res.status(200).json({
+                success: true,
+                message: "Users retrieved successfully",
+                data: result.users,
+                pagination: result.pagination,
+            });
         } catch (error) {
-        next(error);
+            next(error);
+        }
+    }
+
+    async getUserById(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const id = Number(req.params.id);
+
+            const user = await userService.getUserById(id);
+
+            res.status(200).json({
+                success: true,
+                message: "User retrieved successfully",
+                data: user,
+            });
+        } catch (error) {
+            next(error);
         }
     }
 }
