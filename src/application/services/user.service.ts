@@ -351,4 +351,20 @@ export class UserService {
             };
         }
     }
+
+    async getActiveUserForAuth(userId: number): Promise<{
+        userId: number;
+        role: UserRole;
+    }> {
+        const user = await this.userRepository.findById(userId);
+
+        if (!user) {
+            throw new AppError(401, "Invalid or expired token");
+        }
+
+        return {
+            userId: user.id,
+            role: user.role,
+        };
+    }
 }
