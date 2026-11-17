@@ -309,4 +309,46 @@ export class UserService {
             return safeUser;
         }
     }
+
+    async deleteUser(id: number): Promise<{
+        id: number;
+        isDeleted: boolean;
+        mongoSynced: boolean;
+    }> {
+        const existingUser = await this.userRepository.findById(id);
+
+        if (!existingUser) {
+            throw new AppError(404, "User not found");
+        }
+
+        await this.userRepository.delete(id);
+
+        try {
+            await this.userSyncRepository.sync({
+                userId: existingUser.id,
+                name: existingUser.name,
+                email: existingUser.email,
+                role: existingUser.role,
+                isDeleted: true,
+            });
+
+            await this.userRepository.update(id, {
+                mongoSynced: true,
+            });
+
+            return {
+                id,
+                isDeleted: true,
+                mongoSynced: true,
+            };
+        } catch (error) {
+            console.error("MongoDB deletion synchronization failed:", error);
+
+            return {
+                id,
+                isDeleted: true,
+                mongoSynced: false,
+            };
+        }
+    }
 }

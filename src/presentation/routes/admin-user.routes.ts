@@ -44,4 +44,11 @@ router.patch(
   (req, res, next) => adminUserController.updateUser(req, res, next)
 );
 
+router.delete(
+  "/:id",
+  authenticate,
+  authorize(UserRole.ADMIN),
+  (req, res, next) => adminUserController.deleteUser(req, res, next)
+);
+
 export default router;

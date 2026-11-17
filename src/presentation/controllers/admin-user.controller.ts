@@ -80,6 +80,26 @@ export class AdminUserController {
             next(error);
         }
     }
+
+    async deleteUser(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const id = Number(req.params.id);
+
+            const result = await userService.deleteUser(id);
+
+            res.status(200).json({
+                success: true,
+                message: "User deleted successfully",
+                data: result,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export const adminUserController = new AdminUserController();
