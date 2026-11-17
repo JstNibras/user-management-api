@@ -204,4 +204,50 @@ export class UserService {
 
         return safeUser;
     }
+
+    async createUser(data: {
+        name: string;
+        email: string;
+        password: string;
+        role: UserRole;
+    }): Promise<Omit<User, "password">> {
+        const existingUser = await this.userRepository.findByEmail(data.email);
+
+        if (existingUser) {
+            throw new AppError(409, "Email already registered");
+        }
+
+        const hashedPassword = await this.passwordHasher.hash(data.password);
+
+        const createdUser = await this.userRepository.create({
+            name: data.name,
+            email: data.email,
+            password: hashedPassword,
+            role: data.role,
+            mongoSynced: false,
+            isDeleted: false,
+        });
+
+        try {
+            await this.userSyncRepository.sync({
+                userId: createdUser.id,
+                name: createdUser.name,
+                email: createdUser.email,
+                role: createdUser.role,
+                isDeleted: createdUser.isDeleted,
+            });
+
+            const syncedUser = await this.userRepository.update(createdUser.id, {
+                mongoSynced: true,
+            });
+
+            const { password, ...safeUser } = syncedUser;
+            return safeUser;
+        } catch (error) {
+            console.error("User created, but MongoDB synchronization failed:", error);
+
+            const { password, ...safeUser } = createdUser;
+            return safeUser;
+        }
+    }
 }

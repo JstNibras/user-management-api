@@ -15,3 +15,10 @@ export const getUsersSchema = z.object({
     .enum(["asc", "desc"])
     .optional(),
 });
+
+export const createUserSchema = z.object({
+  name: z.string().trim().min(2),
+  email: z.string().trim().email(),
+  password: z.string().min(8),
+  role: z.enum(["ADMIN", "USER"]),
+});

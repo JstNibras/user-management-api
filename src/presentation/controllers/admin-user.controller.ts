@@ -42,6 +42,24 @@ export class AdminUserController {
             next(error);
         }
     }
+
+    async createUser(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const user = await userService.createUser(req.body);
+
+            res.status(201).json({
+                success: true,
+                message: "User created successfully",
+                data: user,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export const adminUserController = new AdminUserController();
