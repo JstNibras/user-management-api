@@ -250,4 +250,63 @@ export class UserService {
             return safeUser;
         }
     }
+
+    async updateUser(
+        id: number,
+        data: {
+            name?: string;
+            email?: string;
+            password?: string;
+            role?: UserRole;
+        }
+    ): Promise<Omit<User, "password">> {
+        const existingUser = await this.userRepository.findById(id);
+
+        if (!existingUser) {
+            throw new AppError(404, "User not found");
+        }
+
+        if (data.email && data.email !== existingUser.email) {
+            const emailUser = await this.userRepository.findByEmail(data.email);
+
+            if (emailUser) {
+                throw new AppError(409, "Email already registered");
+            }
+        }
+
+        const updateData: Partial<User> = {
+            name: data.name,
+            email: data.email,
+            role: data.role,
+            mongoSynced: false,
+        };
+
+        if (data.password) {
+            updateData.password = await this.passwordHasher.hash(data.password);
+        }
+
+        const updatedUser = await this.userRepository.update(id, updateData);
+
+        try {
+            await this.userSyncRepository.sync({
+                userId: updatedUser.id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                isDeleted: updatedUser.isDeleted,
+            });
+
+            const syncedUser = await this.userRepository.update(id, {
+                mongoSynced: true,
+            });
+
+            const { password, ...safeUser } = syncedUser;
+            return safeUser;
+        } catch (error) {
+            console.error("MongoDB synchronization failed:", error);
+
+            const { password, ...safeUser } = updatedUser;
+            return safeUser;
+        }
+    }
 }

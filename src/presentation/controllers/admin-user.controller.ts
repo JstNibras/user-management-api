@@ -60,6 +60,26 @@ export class AdminUserController {
             next(error);
         }
     }
+
+    async updateUser(
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> {
+        try {
+            const id = Number(req.params.id);
+
+            const user = await userService.updateUser(id, req.body);
+
+            res.status(200).json({
+                success: true,
+                message: "User updated successfully",
+                data: user,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export const adminUserController = new AdminUserController();

@@ -22,3 +22,17 @@ export const createUserSchema = z.object({
   password: z.string().min(8),
   role: z.enum(["ADMIN", "USER"]),
 });
+
+export const updateUserSchema = z
+  .object({
+    name: z.string().trim().min(2).optional(),
+    email: z.string().trim().email().optional(),
+    password: z.string().min(8).optional(),
+    role: z.enum(["ADMIN", "USER"]).optional(),
+  })
+  .refine(
+    (data) => Object.keys(data).length > 0,
+    {
+      message: "At least one field must be provided",
+    }
+  );

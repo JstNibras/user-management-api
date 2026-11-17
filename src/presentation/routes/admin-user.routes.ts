@@ -4,9 +4,12 @@ import { authenticate } from "../middlewares/auth.middleware";
 import { authorize } from "../middlewares/role.middleware";
 import { UserRole } from "../../domain/entities/user.entity";
 import { validateQuery } from "../middlewares/validate.middleware";
-import { getUsersSchema } from "../validators/admin-user.validator";
 import { validate } from "../middlewares/validate.middleware";
-import { createUserSchema } from "../validators/admin-user.validator";
+import { 
+  getUsersSchema, 
+  createUserSchema, 
+  updateUserSchema
+} from "../validators/admin-user.validator";
 
 const router = Router();
 
@@ -31,6 +34,14 @@ router.post(
   authorize(UserRole.ADMIN),
   validate(createUserSchema),
   (req, res, next) => adminUserController.createUser(req, res, next)
+);
+
+router.patch(
+  "/:id",
+  authenticate,
+  authorize(UserRole.ADMIN),
+  validate(updateUserSchema),
+  (req, res, next) => adminUserController.updateUser(req, res, next)
 );
 
 export default router;
